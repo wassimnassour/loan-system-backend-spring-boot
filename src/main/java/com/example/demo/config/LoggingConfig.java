@@ -1,4 +1,4 @@
-package com.yourcompany.yourapp.config;
+package com.example.demo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +9,7 @@ public class LoggingConfig {
 
     @Bean
     public CommonsRequestLoggingFilter requestLoggingFilter() {
+        System.out.print("I'm here");
         CommonsRequestLoggingFilter loggingFilter = new CommonsRequestLoggingFilter();
         loggingFilter.setIncludeClientInfo(true);       // Logs IP address
         loggingFilter.setIncludeQueryString(true);      // Logs query params

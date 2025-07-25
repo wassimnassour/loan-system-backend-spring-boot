@@ -1,4 +1,25 @@
-spring.application.name=loanSystem
-spring.datasource.url=""
-spring.datasource.username=""
-spring.datasource.password=""
+
+spring:
+  application:
+    name:  "loanSystem"
+  datasource:
+    username: "my_user"
+    password: "my_password"
+    url: jdbc:postgresql://localhost:5450/my_database
+  jpa:
+    show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+  liquibase:
+    change-log: classpath:/db/changelog/master.xml
+logging:
+
+  file:
+    path: logs
+  level:
+    root: INFO
+
+
+
+
