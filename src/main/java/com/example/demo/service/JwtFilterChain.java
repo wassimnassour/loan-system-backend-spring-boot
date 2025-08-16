@@ -1,31 +1,31 @@
 package com.example.demo.service;
 
-import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepo;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.UnavailableException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import org.springframework.security.web.util.matcher.RequestMatcher;
+
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class JwtFilterChain extends OncePerRequestFilter {
 
-    JwtService jwtService;
-    UserRepo userRepo;
+    private  final JwtService jwtService;
+    private  final UserRepo userRepo;
 
 
 
@@ -45,7 +45,10 @@ public class JwtFilterChain extends OncePerRequestFilter {
                String email =  jwtService.extractUsername(token);
                 User user = userRepo.findByEmail(email);
                 if(user != null) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(user, null , user.getAuthorities());
+
+                    List<GrantedAuthority> listGrantedAutherties = user.getAuthorities().stream().map(authority ->
+                            new SimpleGrantedAuthority(authority.getAuthority())).collect(Collectors.toList());
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(user, null , listGrantedAutherties);
                     authToken.setDetails(user);
                     SecurityContextHolder.getContext().setAuthentication(authToken);                }
             }

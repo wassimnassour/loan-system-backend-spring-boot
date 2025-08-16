@@ -1,5 +1,6 @@
 package com.example.demo.dto.request;
 
+import com.example.demo.enums.EnumRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -18,5 +19,6 @@ public class RegisterUserRequestDTO {
     @Size(min = 6, message = "Password must be at least 6 characters long")
     private String password;
 
-    private String role = "USER"; // Default role
+
+    private EnumRole role = EnumRole.valueOf("USER"); // Default role
 }

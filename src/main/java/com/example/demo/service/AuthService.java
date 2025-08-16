@@ -4,6 +4,7 @@ import com.example.demo.dto.request.LoginUserRequestDTO;
 import com.example.demo.dto.request.RegisterUserRequestDTO;
 import com.example.demo.dto.response.CreateUserResponseDTO;
 import com.example.demo.dto.response.LoginUserResponseDTO;
+import com.example.demo.enums.EnumRole;
 import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.User;
@@ -21,8 +22,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.management.relation.Role;
-
 @Service
 @AllArgsConstructor
 public class AuthService {
@@ -30,6 +29,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    
     private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
     private final UserMapper userMapper;
 
@@ -45,7 +45,7 @@ public class AuthService {
             if (authentication.isAuthenticated()) {
                 User user = (User) authentication.getPrincipal();
                 String token = jwtService.generateToken(user);
-                return new LoginUserResponseDTO(token, user.getEmail());
+                return userMapper.userToLoginUserDto(user, token);
             } else {
                 throw new UnauthorizedException("Invalid Email or Password");
             }
@@ -70,7 +70,7 @@ public class AuthService {
     public CreateUserResponseDTO register(RegisterUserRequestDTO requestPayload) {
       try {
           logger.info("Registering new user: {}", requestPayload.getEmail());
-          String role = requestPayload.getRole();
+          EnumRole role = requestPayload.getRole();
           String password = requestPayload.getPassword();
           String email = requestPayload.getEmail();
           String name  = requestPayload.getName();
@@ -86,7 +86,7 @@ public class AuthService {
           user.setName(name);
           user.setEmail(email);
           user.setPassword(passwordEncoder.encode(password));
-          user.setRole(role != null ? requestPayload.getRole() : "USER");
+          user.setRole(role != null ? requestPayload.getRole() : EnumRole.USER);
           userRepo.save(user);
           return userMapper.UserToCreateUserDto( user, jwtService.generateToken(user));
       }catch (Exception e) {

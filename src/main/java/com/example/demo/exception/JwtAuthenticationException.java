@@ -1,13 +1,7 @@
 package com.example.demo.exception;
 
-import org.springframework.security.core.AuthenticationException;
-
-public class JwtAuthenticationException extends AuthenticationException {
+public class JwtAuthenticationException extends RuntimeException {
     public JwtAuthenticationException(String message) {
         super(message);
-    }
-
-    public JwtAuthenticationException(String message, Throwable cause) {
-        super(message, cause);
     }
 }

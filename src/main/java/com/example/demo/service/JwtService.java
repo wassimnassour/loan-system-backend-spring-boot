@@ -1,11 +1,15 @@
 package com.example.demo.service;
 
 import com.example.demo.exception.JwtAuthenticationException;
-import com.example.demo.model.User;
+import com.example.demo.repository.UserRepo;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +27,7 @@ public class JwtService {
     private String secretKey;
 
     @Value("${jwt.expiration}")
-    private long expiration;
+    private String expiration;
 
     private Key key;
 
@@ -33,27 +37,28 @@ public class JwtService {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(UserDetails userDetails) {
+
+
+    public String generateToken(UserDetails user) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("sub", userDetails.getUsername());
-        claims.put("email", userDetails.getUsername()); // Since username is email in our case
-        
+        claims.put("roles", user.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList());
+
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + expiration);
-        
+
+        Date expiryDate = new Date(System.currentTimeMillis()  * 1000L);
+
+
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(userDetails.getUsername())
+                .setSubject(user.getUsername()) // this sets "sub"
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(key)
+                .signWith(key, SignatureAlgorithm.HS256) // specify algorithm explicitly
                 .compact();
     }
-
-    public String generateToken(User user) {
-        return generateToken((UserDetails) user);
-    }
-
 
     public Claims extractClaims(String token) {
         try {
