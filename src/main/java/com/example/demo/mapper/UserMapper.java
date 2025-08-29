@@ -8,7 +8,6 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-    LoginUserResponseDTO userToLoginUserDto(User user);
 
     default LoginUserResponseDTO userToLoginUserDto(User user , String token) {
         LoginUserResponseDTO createUserResponseDTO = new LoginUserResponseDTO();

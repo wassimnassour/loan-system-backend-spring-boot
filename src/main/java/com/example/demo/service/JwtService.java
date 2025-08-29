@@ -1,15 +1,11 @@
 package com.example.demo.service;
 
 import com.example.demo.exception.JwtAuthenticationException;
-import com.example.demo.repository.UserRepo;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -69,8 +65,6 @@ public class JwtService {
             throw new JwtAuthenticationException("Invalid JWT: Malformed token");
         } catch (ExpiredJwtException e) {
             throw new JwtAuthenticationException("Invalid JWT: Token has expired");
-        } catch (SignatureException e) {
-            throw new JwtAuthenticationException("Invalid JWT: Signature verification failed");
         } catch (IllegalArgumentException e) {
             throw new JwtAuthenticationException("Invalid JWT: Token cannot be null or empty");
         }
@@ -89,4 +83,10 @@ public class JwtService {
     public Boolean verifyToken (String token , UserDetails user) {
         return !isTokenExpired(token) && user.getUsername().equals(extractUsername(token));
     }
+
+//    @SuppressWarnings("unchecked")
+//    public List<String> extractRoles(String token) {
+//        Claims claims = extractClaims(token);
+//        return (List<String>) claims.get("roles");
+//    }
 }

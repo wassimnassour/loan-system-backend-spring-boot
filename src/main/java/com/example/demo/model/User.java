@@ -1,6 +1,6 @@
 package com.example.demo.model;
 
-import com.example.demo.enums.EnumRole;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Builder
 @Entity
@@ -29,13 +30,17 @@ public class User implements UserDetails {
     private  String password;
     private String email;
 
-    @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private EnumRole role =EnumRole.USER;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+         name = "User_Role",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns =  @JoinColumn(name = "role_id")
+    )
+    private Set<Roles> roles ;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        return roles.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role.name)).toList();
     }
 
     @Override

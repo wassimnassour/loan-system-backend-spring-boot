@@ -5,10 +5,11 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <include file="db/changelog/Role.xml"/>
-    <include file="db/changelog/Users.xml"/>
-    <include file="db/changelog/user_role_relation.xml"/>
-    <include file="db/changelog/insert_roles.xml" />
-
+    <changeSet id="1756417635535-2" author="wassim">
+      <loadData tableName="roles" file="db/data/roles.csv"  separator=",">
+          <column name="id" type="java.lang.Long" />
+          <column name="name" type="varchar(255)" />
+      </loadData>
+    </changeSet>
 
 </databaseChangeLog>

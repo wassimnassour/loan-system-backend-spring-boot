@@ -7,12 +7,15 @@ import com.example.demo.dto.response.LoginUserResponseDTO;
 import com.example.demo.enums.EnumRole;
 import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.mapper.UserMapper;
+import com.example.demo.model.Roles;
 import com.example.demo.model.User;
+import com.example.demo.repository.RoleRepo;
 import com.example.demo.repository.UserRepo;
 import lombok.AllArgsConstructor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
@@ -21,14 +24,21 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
 public class AuthService {
     private final UserRepo userRepo;
+    private  final RoleRepo roleRepo;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+
     
     private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
     private final UserMapper userMapper;
@@ -66,32 +76,46 @@ public class AuthService {
             throw new UnauthorizedException("Authentication failed");
         }
     }
-
     public CreateUserResponseDTO register(RegisterUserRequestDTO requestPayload) {
-      try {
-          logger.info("Registering new user: {}", requestPayload.getEmail());
-          EnumRole role = requestPayload.getRole();
-          String password = requestPayload.getPassword();
-          String email = requestPayload.getEmail();
-          String name  = requestPayload.getName();
+        try {
+            logger.info("Registering new user: {}", requestPayload.getEmail());
 
-          // Check if user already exists
-          User existingUser = userRepo.findByEmail(email);
-          if (existingUser != null) {
-              throw new IllegalArgumentException("User with email " + email + " already exists");
-          }
+            String password = requestPayload.getPassword();
+            String email = requestPayload.getEmail();
+            String name  = requestPayload.getName();
 
-          // Create new user
-          User user = new User();
-          user.setName(name);
-          user.setEmail(email);
-          user.setPassword(passwordEncoder.encode(password));
-          user.setRole(role != null ? requestPayload.getRole() : EnumRole.USER);
-          userRepo.save(user);
-          return userMapper.UserToCreateUserDto( user, jwtService.generateToken(user));
-      }catch (Exception e) {
-          logger.error("Unexpected authentication error for user: {}", requestPayload.getEmail(), e);
-          throw new UnauthorizedException("Authentication failed");
-      }
+            // Check if user already exists
+            User existingUser = userRepo.findByEmail(email);
+            if (existingUser != null) {
+                throw new IllegalArgumentException("User with email " + email + " already exists");
+            }
+
+            // Create new user
+            User user = new User();
+            user.setName(name);
+            user.setEmail(email);
+            user.setPassword(passwordEncoder.encode(password));
+
+            // Get or create USER role dynamically
+            Roles roleUser = roleRepo.findByName(EnumRole.USER.name());
+            if (roleUser == null) {
+                roleUser = new Roles();
+                roleUser.setName(EnumRole.USER.name());
+                roleRepo.save(roleUser);
+            }
+
+            // Assign role using Set to avoid duplicates
+            Set<Roles> roles = new HashSet<>();
+            roles.add(roleUser);
+            user.setRoles(roles);
+            userRepo.save(user);
+
+            return userMapper.UserToCreateUserDto(user, jwtService.generateToken(user));
+
+        } catch (Exception e) {
+            logger.error("Unexpected authentication error for user: {}", requestPayload.getEmail(), e);
+            throw new UnauthorizedException("Authentication failed");
+        }
     }
+
 }
