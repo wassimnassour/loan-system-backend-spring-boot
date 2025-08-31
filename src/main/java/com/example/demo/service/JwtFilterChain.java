@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -20,15 +21,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class JwtFilterChain extends OncePerRequestFilter {
-
     private  final JwtService jwtService;
     private  final UserRepo userRepo;
-
-
-
-
 
 
     @Override
@@ -41,7 +37,7 @@ public class JwtFilterChain extends OncePerRequestFilter {
             Boolean isTokenExpired = jwtService.isTokenExpired(token);
             if (!isTokenExpired) {
 
-               String email =  jwtService.extractUsername(token);
+               String email =  jwtService.extractUsernameToken(token);
                 User user = userRepo.findByEmail(email);
                 if(user != null) {
 

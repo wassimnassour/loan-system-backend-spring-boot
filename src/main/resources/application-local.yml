@@ -13,10 +13,6 @@ spring:
       ddl-auto: none
   liquibase:
     change-log: classpath:/db/changelog/master.xml
-  jwt:
-    secret: This-is-Token
-    access-token-expiration: 4000
-    refresh-token-expiration: 60000
 logging:
 
   file:
@@ -29,6 +25,10 @@ jwt:
   secret: "MyVerySecretKeyMyVerySecretKeyMyVerySecretKeyMyVerySecretKeyMyVerySecretKeyMyVerySecretKey"
   expiration: 3600000  # 1 hour in milliseconds
   issuer: "my-app"
+  access-token-expiration: 4000
+  refreshTokenExpiration: 600009
+  refreshSecretKey: refreshSecretKeyrefreshSecretKeyrefreshSecretKeyrefreshSecretKeyrefreshSecretKeyrefreshSecretKeyrefreshSecretKey
+
 
 
 

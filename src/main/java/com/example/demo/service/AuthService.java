@@ -1,14 +1,18 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.request.LoginUserRequestDTO;
+import com.example.demo.dto.request.RefreshTokenRequestDto;
 import com.example.demo.dto.request.RegisterUserRequestDTO;
 import com.example.demo.dto.response.CreateUserResponseDTO;
+import com.example.demo.dto.response.JwtResponse;
 import com.example.demo.dto.response.LoginUserResponseDTO;
 import com.example.demo.enums.EnumRole;
 import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.mapper.UserMapper;
+import com.example.demo.model.RefreshToken;
 import com.example.demo.model.Roles;
 import com.example.demo.model.User;
+import com.example.demo.repository.RefreshTokenRepo;
 import com.example.demo.repository.RoleRepo;
 import com.example.demo.repository.UserRepo;
 import lombok.AllArgsConstructor;
@@ -16,6 +20,7 @@ import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
@@ -28,6 +33,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -35,6 +41,7 @@ import java.util.Set;
 public class AuthService {
     private final UserRepo userRepo;
     private  final RoleRepo roleRepo;
+    private final RefreshTokenRepo refreshTokenRepo;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
@@ -54,8 +61,9 @@ public class AuthService {
             
             if (authentication.isAuthenticated()) {
                 User user = (User) authentication.getPrincipal();
-                String token = jwtService.generateToken(user);
-                return userMapper.userToLoginUserDto(user, token);
+                String token = jwtService.generateAccessToken(user);
+                String refreshToken = jwtService.generateRefreshToken(user);
+                return userMapper.userToLoginUserDto(user, token , refreshToken);
             } else {
                 throw new UnauthorizedException("Invalid Email or Password");
             }
@@ -110,12 +118,27 @@ public class AuthService {
             user.setRoles(roles);
             userRepo.save(user);
 
-            return userMapper.UserToCreateUserDto(user, jwtService.generateToken(user));
+            return userMapper.UserToCreateUserDto(user, jwtService.generateAccessToken(user) , jwtService.generateRefreshToken(user) );
 
         } catch (Exception e) {
             logger.error("Unexpected authentication error for user: {}", requestPayload.getEmail(), e);
             throw new UnauthorizedException("Authentication failed");
         }
+    }
+
+    public JwtResponse refreshToken(RefreshTokenRequestDto refreshTokenRequestDto) {
+        RefreshToken token = refreshTokenRepo.findByToken(refreshTokenRequestDto.getRefreshToken())
+                .orElseThrow(() -> new RuntimeException("Refresh token not found"));
+
+        if (!jwtService.verifyRefreshToken(token.getToken(), token.getUser())) {
+            throw new RuntimeException("Invalid or expired refresh token");
+        }
+
+        User user = token.getUser();
+        String newRefreshToken = jwtService.generateRefreshToken(user);
+        String newAccessToken = jwtService.generateAccessToken(user);
+
+        return new JwtResponse(newAccessToken, newRefreshToken);
     }
 
 }
