@@ -69,7 +69,7 @@ public class JwtService {
     }
 
     public Key getRefreshTokenKey(){
-        return tokenKey;
+        return refreshTokenKey;
     }
 
     public String extractUsernameToken(String token) {
@@ -95,7 +95,30 @@ public class JwtService {
     }
 
     public Boolean verifyRefreshToken (String token , UserDetails user) {
-        return !isTokenExpired(token) && user.getUsername().equals(extractUsernameRefreshToken(token));
+        return !isRefreshTokenExpired(token) && user.getUsername().equals(extractUsernameRefreshToken(token));
+    }
+
+    /**
+     * Check if refresh token is expired without throwing exception
+     * @param token the refresh token to check
+     * @return true if expired, false if valid, null if token is invalid/malformed
+     */
+    public Boolean isRefreshTokenExpiredSafe(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(refreshTokenKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getExpiration()
+                    .before(new Date());
+        } catch (ExpiredJwtException e) {
+            // Token is expired
+            return true;
+        } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException e) {
+            // Token is invalid/malformed
+            return null;
+        }
     }
 
     public String generateRefreshToken (UserDetails user) {
@@ -115,15 +138,15 @@ public class JwtService {
                 .map(GrantedAuthority::getAuthority)
                 .toList());
 
-        Date now = new Date();
+        Instant now =  Instant.now();
 
-        Instant expiryDate = Instant.from(Instant.now()).plusMillis(expiration);
+        Instant expiryDate = Instant.now().plusMillis(expiration);
 
 
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.getUsername()) // this sets "sub"
-                .setIssuedAt(now)
+                .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(expiryDate))
                 .signWith(singingkey, SignatureAlgorithm.HS256) // specify algorithm explicitly
                 .compact();

@@ -63,6 +63,11 @@ public class AuthService {
                 User user = (User) authentication.getPrincipal();
                 String token = jwtService.generateAccessToken(user);
                 String refreshToken = jwtService.generateRefreshToken(user);
+                RefreshToken refreshTokenEntity =new  RefreshToken();
+                refreshTokenEntity.setToken(refreshToken);
+                refreshTokenEntity.setUser(user);
+                refreshTokenRepo.save(refreshTokenEntity);
+
                 return userMapper.userToLoginUserDto(user, token , refreshToken);
             } else {
                 throw new UnauthorizedException("Invalid Email or Password");
@@ -71,14 +76,9 @@ public class AuthService {
             logger.error("Authentication failed for user: {}", loginUserRequestDTO.getEmail(), e);
             throw new UnauthorizedException("Invalid email or password");
         } catch (InternalAuthenticationServiceException e) {
-            // This often wraps UsernameNotFoundException
-            if (e.getCause() instanceof UsernameNotFoundException) {
-                logger.error("User not found: {}", loginUserRequestDTO.getEmail(), e);
-                throw new UnauthorizedException("User not found");
-            } else {
                 logger.error("Internal authentication error for user: {}", loginUserRequestDTO.getEmail(), e);
                 throw new UnauthorizedException("Authentication failed");
-            }
+
         } catch (Exception e) {
             logger.error("Unexpected authentication error for user: {}", loginUserRequestDTO.getEmail(), e);
             throw new UnauthorizedException("Authentication failed");
@@ -127,11 +127,27 @@ public class AuthService {
     }
 
     public JwtResponse refreshToken(RefreshTokenRequestDto refreshTokenRequestDto) {
+        System.out.println("Refresh Token: " + refreshTokenRequestDto.getRefreshToken());
         RefreshToken token = refreshTokenRepo.findByToken(refreshTokenRequestDto.getRefreshToken())
-                .orElseThrow(() -> new RuntimeException("Refresh token not found"));
+                .orElseThrow(() -> new BadCredentialsException("Refresh token not found"));
 
-        if (!jwtService.verifyRefreshToken(token.getToken(), token.getUser())) {
-            throw new RuntimeException("Invalid or expired refresh token");
+        // Check if token is expired using the safe method
+        Boolean isExpired = jwtService.isRefreshTokenExpiredSafe(token.getToken());
+        
+        if (isExpired == null) {
+            // Token is malformed/invalid
+            refreshTokenRepo.delete(token);
+            throw new RuntimeException("Invalid refresh token format");
+        } else if (isExpired) {
+            // Token is expired - delete it from database
+            refreshTokenRepo.delete(token);
+            throw new RuntimeException("Refresh token has expired");
+        }
+        
+        // Additional verification (username match)
+        if (!token.getUser().getUsername().equals(jwtService.extractUsernameRefreshToken(token.getToken()))) {
+            refreshTokenRepo.delete(token);
+            throw new RuntimeException("Invalid refresh token");
         }
 
         User user = token.getUser();
