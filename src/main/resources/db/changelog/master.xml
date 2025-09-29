@@ -10,6 +10,7 @@
     <include file="db/changelog/user_role_relation.xml"/>
     <include file="db/changelog/insert_roles.xml" />
     <include file="db/changelog/refreshToken.xml" />
+    <include file="db/changelog/Loan.xml" />
 
 
 </databaseChangeLog>
