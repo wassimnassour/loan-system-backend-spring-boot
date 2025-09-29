@@ -1,10 +1,11 @@
 package com.example.demo.mapper;
 
 
+import org.mapstruct.Mapper;
+
 import com.example.demo.dto.response.CreateUserResponseDTO;
 import com.example.demo.dto.response.LoginUserResponseDTO;
 import com.example.demo.model.User;
-import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
