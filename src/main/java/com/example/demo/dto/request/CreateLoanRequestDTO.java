@@ -1,5 +1,6 @@
 package com.example.demo.dto.request;
 
+import com.example.demo.model.Loan;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -14,6 +15,9 @@ public class CreateLoanRequestDTO {
     @DecimalMin(value = "1000.0", message = "Loan amount must be at least 1000")
     private BigDecimal amount;
 
+    @NotNull(message = "Loan type is required")
+    private Loan.LoanType type;
+
     @NotNull(message = "Interest rate is required")
     @DecimalMin(value = "0.1", message = "Interest rate must be at least 0.1%")
     private BigDecimal interestRate;
@@ -27,3 +31,4 @@ public class CreateLoanRequestDTO {
 
     private String notes;
 }
+

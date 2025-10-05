@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 public class LoanResponseDTO {
     private Long id;
     private BigDecimal amount;
+    private Loan.LoanType type;
     private BigDecimal interestRate;
     private Integer termInMonths;
     private String purpose;
@@ -23,7 +24,10 @@ public class LoanResponseDTO {
     private LocalDateTime applicationDate;
     private LocalDateTime approvalDate;
     private LocalDateTime disbursementDate;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private String userEmail;
     private String userName;
     private String notes;
 }
+

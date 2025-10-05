@@ -9,8 +9,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.*;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/loans")
@@ -18,6 +24,8 @@ import java.util.List;
 public class LoanController {
 
     private final LoanService loanService;
+    private static final String UPLOAD_DIR = "uploads/"; // relative to project root
+
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
@@ -53,4 +61,14 @@ public class LoanController {
         String result = loanService.deleteLoan(loanId);
         return ResponseEntity.ok(result);
     }
+
+
+    @PostMapping("/document/upload")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<String> uploadDocument1(@RequestParam("file") MultipartFile file) throws IOException {
+        loanService.uploadDocument(file);
+        return ResponseEntity.ok("File uploaded successfully to " + file.getName());
+    }
+
 }
+

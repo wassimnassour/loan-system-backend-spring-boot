@@ -13,12 +13,18 @@ spring:
       ddl-auto: none
   liquibase:
     change-log: classpath:/db/changelog/master.xml
+  servlet:
+    multipart:
+      enabled: on
+      max-request-size: 10MB
+      max-file-size: 10MB
 logging:
 
   file:
     path: logs
   level:
     root: INFO
+
 
 
 jwt:
