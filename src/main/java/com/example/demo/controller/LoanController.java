@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.request.CreateLoanRequestDTO;
 import com.example.demo.dto.response.LoanResponseDTO;
+import com.example.demo.model.Document;
 import com.example.demo.service.LoanService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -68,6 +69,11 @@ public class LoanController {
     public ResponseEntity<String> uploadDocument1(@RequestParam("file") MultipartFile file) throws IOException {
         loanService.uploadDocument(file);
         return ResponseEntity.ok("File uploaded successfully to " + file.getName());
+    }
+
+    @GetMapping("/document/all")
+    public ResponseEntity<List<Document>> getAllDocuments(@RequestParam("userId") Long userId) {
+         return ResponseEntity.ok(loanService.listDocuments(userId));
     }
 
 }

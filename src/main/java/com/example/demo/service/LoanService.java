@@ -2,9 +2,12 @@ package com.example.demo.service;
 
 import com.example.demo.dto.request.CreateLoanRequestDTO;
 import com.example.demo.dto.response.LoanResponseDTO;
+import com.example.demo.model.Document;
 import com.example.demo.model.Loan;
 import com.example.demo.model.User;
+import com.example.demo.repository.DocumentRepo;
 import com.example.demo.repository.LoanRepo;
+import com.example.demo.repository.UserRepo;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +33,8 @@ import java.util.stream.Collectors;
 public class LoanService {
 
     private final LoanRepo loanRepo;
+    private final DocumentRepo documentRepo;
+
 
     @Transactional
     public LoanResponseDTO createLoan(CreateLoanRequestDTO createLoanRequestDTO) {
@@ -116,6 +121,7 @@ public class LoanService {
         return mapToResponseDTO(loan);
     }
 
+    @Transactional
     public void uploadDocument(MultipartFile file) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
@@ -134,8 +140,17 @@ public class LoanService {
         try (InputStream inputStream = file.getInputStream()) {
             Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
         }
+        Document document = new  Document();
+        document.setUser(currentUser);
+        document.setFilePath(filePath.getFileName().toString());
+        document.setFileName(originalName);
+        documentRepo.save(document);
+
     }
 
+    public List<Document> listDocuments(Long userId){
+        return documentRepo.findAllByUserId(userId);
+    }
     private LoanResponseDTO mapToResponseDTO(Loan loan) {
         return LoanResponseDTO.builder()
                 .id(loan.getId())

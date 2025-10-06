@@ -11,6 +11,6 @@
     <include file="db/changelog/insert_roles.xml" />
     <include file="db/changelog/refreshToken.xml" />
     <include file="db/changelog/Loan.xml" />
-
+    <include file="db/changelog/document.xml" />
 
 </databaseChangeLog>

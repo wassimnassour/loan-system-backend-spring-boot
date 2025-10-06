@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="create_document_seq" author="nassourwassin (generated)">
+        <createSequence sequenceName="document_seq" startValue="1" incrementBy="1"  minValue="1"/>
+    </changeSet>
+    <changeSet id="1759694363578-1" author="nassourwassin (generated)">
+        <createTable tableName="document">
+            <column type="bigint" name="id" >
+                <constraints primaryKey="true" nullable="false"  />
+            </column>
+            <column type="varchar(250)" name="file_path">
+                <constraints nullable="false" />
+            </column>
+            <column type="varchar(250)" name="file_name">
+               <constraints nullable="true" />
+            </column>
+            <column type="date" name="created_at" />
+            <column type="date" name="updated_at" />
+            <column type="bigint" name="user_id" />
+
+        </createTable>
+        <addForeignKeyConstraint baseTableName="document" baseColumnNames="user_id" constraintName="fk_user_Document"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id" />
+    </changeSet>
+
+</databaseChangeLog>
