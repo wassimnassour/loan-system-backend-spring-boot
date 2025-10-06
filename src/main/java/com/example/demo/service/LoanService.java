@@ -2,18 +2,30 @@ package com.example.demo.service;
 
 import com.example.demo.dto.request.CreateLoanRequestDTO;
 import com.example.demo.dto.response.LoanResponseDTO;
+import com.example.demo.model.Document;
 import com.example.demo.model.Loan;
 import com.example.demo.model.User;
+import com.example.demo.repository.DocumentRepo;
 import com.example.demo.repository.LoanRepo;
+import com.example.demo.repository.UserRepo;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
@@ -21,6 +33,8 @@ import java.util.stream.Collectors;
 public class LoanService {
 
     private final LoanRepo loanRepo;
+    private final DocumentRepo documentRepo;
+
 
     @Transactional
     public LoanResponseDTO createLoan(CreateLoanRequestDTO createLoanRequestDTO) {
@@ -31,6 +45,7 @@ public class LoanService {
         // Create new loan
         Loan loan = Loan.builder()
                 .amount(createLoanRequestDTO.getAmount())
+                .type(createLoanRequestDTO.getType())
                 .interestRate(createLoanRequestDTO.getInterestRate())
                 .termInMonths(createLoanRequestDTO.getTermInMonths())
                 .purpose(createLoanRequestDTO.getPurpose())
@@ -106,10 +121,41 @@ public class LoanService {
         return mapToResponseDTO(loan);
     }
 
+    @Transactional
+    public void uploadDocument(MultipartFile file) throws IOException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        Path uploadDirectory = Paths.get("uploads");
+
+        Files.createDirectories(uploadDirectory);
+
+        if (file.isEmpty()) {
+             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File is empty");
+        }
+
+        String originalName = currentUser.getId()+"-"+file.getOriginalFilename();
+        Path filePath = uploadDirectory.resolve(originalName);
+
+        try (InputStream inputStream = file.getInputStream()) {
+            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+        }
+        Document document = new  Document();
+        document.setUser(currentUser);
+        document.setFilePath(filePath.getFileName().toString());
+        document.setFileName(originalName);
+        documentRepo.save(document);
+
+    }
+
+    public List<Document> listDocuments(Long userId){
+        return documentRepo.findAllByUserId(userId);
+    }
     private LoanResponseDTO mapToResponseDTO(Loan loan) {
         return LoanResponseDTO.builder()
                 .id(loan.getId())
                 .amount(loan.getAmount())
+                .type(loan.getType())
                 .interestRate(loan.getInterestRate())
                 .termInMonths(loan.getTermInMonths())
                 .purpose(loan.getPurpose())
@@ -117,9 +163,12 @@ public class LoanService {
                 .applicationDate(loan.getApplicationDate())
                 .approvalDate(loan.getApprovalDate())
                 .disbursementDate(loan.getDisbursementDate())
+                .createdAt(loan.getCreatedAt())
+                .updatedAt(loan.getUpdatedAt())
                 .userEmail(loan.getUser().getEmail())
                 .userName(loan.getUser().getName())
                 .notes(loan.getNotes())
                 .build();
     }
+
 }
