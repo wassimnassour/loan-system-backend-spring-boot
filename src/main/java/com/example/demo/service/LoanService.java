@@ -7,10 +7,8 @@ import com.example.demo.model.Loan;
 import com.example.demo.model.User;
 import com.example.demo.repository.DocumentRepo;
 import com.example.demo.repository.LoanRepo;
-import com.example.demo.repository.UserRepo;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -25,7 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
