@@ -41,7 +41,8 @@ public class Loan {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private LoanStatus status;
+    @Builder.Default
+    private LoanStatus status = LoanStatus.PENDING;
 
     @Column(nullable = false)
     private LocalDateTime applicationDate;

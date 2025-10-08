@@ -6,8 +6,10 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.nio.file.AccessDeniedException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,4 +42,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
     }
+
+   @ExceptionHandler(NoHandlerFoundException.class)
+   public ResponseEntity<Map<String, Object>> handleNoHandlerFoundException(NoHandlerFoundException e) {
+       Map<String, Object> errorResponse = new HashMap<>();
+       errorResponse.put("timestamp", LocalDateTime.now().toString());
+       errorResponse.put("status", 404);
+       errorResponse.put("error", "Not Found");
+       errorResponse.put("message", "The requested endpoint does not exist");
+       errorResponse.put("path", e.getRequestURL());
+
+       return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+   }
 }
