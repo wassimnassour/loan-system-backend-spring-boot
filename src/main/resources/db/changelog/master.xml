@@ -12,5 +12,5 @@
     <include file="db/changelog/refreshToken.xml" />
     <include file="db/changelog/Loan.xml" />
     <include file="db/changelog/document.xml" />
-
+    <include file="db/changelog/updateLoanStatus.xml" />
 </databaseChangeLog>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="1760119134773-1" author="nassourwassin (generated)">
+        <createTable tableName="loan_process_history">
+            <column type="bigint" name="id" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="comment" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="from_status" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="to_status" type="varchar(255)">
+                 <constraints nullable="false" />
+            </column>
+            <column name="performed_by" type="varchar(255)">
+                <constraints nullable="false"  />
+            </column>
+            <column name="performed_at" type="date">
+                <constraints nullable="false" />
+            </column>
+            <column name="loan_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="loan_process_history" baseColumnNames="loan_id"
+                                 constraintName="fk_loan_id"
+                                 referencedTableName="loans"
+                                 referencedColumnNames="id" />
+    </changeSet>
+</databaseChangeLog>

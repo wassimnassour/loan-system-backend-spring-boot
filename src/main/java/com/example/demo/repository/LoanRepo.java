@@ -22,4 +22,6 @@ public interface LoanRepo extends JpaRepository<Loan, Long> {
     List<Loan> findByStatusOrderByApplicationDateDesc(@Param("status") Loan.LoanStatus status);
     
     long countByUser(User user);
+
+    Loan findLoanById(Long id);
 }

@@ -1,11 +1,15 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.request.CreateLoanRequestDTO;
+import com.example.demo.dto.request.loan.UpdateLoanStatusCreateDTO;
 import com.example.demo.dto.response.LoanResponseDTO;
 import com.example.demo.model.Document;
+import com.example.demo.model.Loan;
+import com.example.demo.model.LoanProcessHistory;
 import com.example.demo.service.LoanService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -76,5 +80,14 @@ public class LoanController {
          return ResponseEntity.ok(loanService.listDocuments(userId));
     }
 
+    @PostMapping("/status/{id}")
+    public void updateLoanStatus(@PathVariable("id") Long loanId,  @RequestBody @Valid  UpdateLoanStatusCreateDTO updateLoanStatus) throws BadRequestException {
+        loanService.updateLoanStatus(loanId , updateLoanStatus);
+    }
+
+    @GetMapping("/{loanId}/history")
+    public ResponseEntity<List<LoanProcessHistory>> getLoanProcessHistory(@PathVariable("loanId") Long loanId) {
+        return ResponseEntity.ok(loanService.listLoanProcessHistory(loanId));
+    }
 }
 

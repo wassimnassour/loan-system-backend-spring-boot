@@ -1,13 +1,17 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.request.CreateLoanRequestDTO;
+import com.example.demo.dto.request.loan.UpdateLoanStatusCreateDTO;
 import com.example.demo.dto.response.LoanResponseDTO;
 import com.example.demo.model.Document;
 import com.example.demo.model.Loan;
+import com.example.demo.model.LoanProcessHistory;
 import com.example.demo.model.User;
 import com.example.demo.repository.DocumentRepo;
+import com.example.demo.repository.LoanProcessHistoryRepo;
 import com.example.demo.repository.LoanRepo;
 import lombok.AllArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,6 +35,7 @@ public class LoanService {
 
     private final LoanRepo loanRepo;
     private final DocumentRepo documentRepo;
+    private  final LoanProcessHistoryRepo loanProcessHistoryRepo;
 
 
     @Transactional
@@ -166,6 +171,34 @@ public class LoanService {
                 .userName(loan.getUser().getName())
                 .notes(loan.getNotes())
                 .build();
+    }
+
+    @Transactional
+    public void updateLoanStatus(Long loanId ,  UpdateLoanStatusCreateDTO updateLoanStatus) throws BadRequestException {
+        try{
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Loan loan = loanRepo.findLoanById(loanId);
+
+            LoanProcessHistory loanProcessHistory = new LoanProcessHistory();
+            loanProcessHistory.setToStatus(updateLoanStatus.getToStatus());
+            loanProcessHistory.setComment(updateLoanStatus.getComment());
+            loanProcessHistory.setLoan(loan);
+            loanProcessHistory.setFromStatus(loan.getStatus());
+            loanProcessHistory.setPerformedBy(((User) authentication.getPrincipal()).getId());
+            loan.setStatus(updateLoanStatus.getToStatus());
+            loanRepo.save(loan);
+            loanProcessHistoryRepo.save(loanProcessHistory);
+        }catch (Exception e){
+            throw new BadRequestException(e);
+        }
+    }
+    public List<LoanProcessHistory> listLoanProcessHistory(Long loanId) {
+        try {
+            return loanProcessHistoryRepo.findLoanProcessHistoriesByLoanId(loanId);
+
+        }catch (Exception e){
+         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan not found");
+        }
     }
 
 }
