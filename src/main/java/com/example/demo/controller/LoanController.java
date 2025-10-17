@@ -1,27 +1,32 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.request.CreateLoanRequestDTO;
+import com.example.demo.dto.request.loan.LoanFilter;
 import com.example.demo.dto.request.loan.UpdateLoanStatusCreateDTO;
-import com.example.demo.dto.response.LoanResponseDTO;
+import com.example.demo.dto.response.loan.AllLoansForUserDto;
+import com.example.demo.dto.response.loan.LoanResponseDTO;
 import com.example.demo.model.Document;
-import com.example.demo.model.Loan;
 import com.example.demo.model.LoanProcessHistory;
+import com.example.demo.model.User;
 import com.example.demo.service.LoanService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.apache.coyote.BadRequestException;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.*;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/loans")
@@ -39,19 +44,35 @@ public class LoanController {
         return ResponseEntity.status(HttpStatus.CREATED).body(loan);
     }
 
-    @GetMapping("/admin/all")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<LoanResponseDTO>> getAllLoansForAdmin() {
-        List<LoanResponseDTO> loans = loanService.getAllLoansForAdmin();
-        return ResponseEntity.ok(loans);
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<AllLoansForUserDto> getAllLoansForAdmin(@RequestParam(required = false) String clientName,
+                                                                  @RequestParam(required = false) String status,
+                                                                  @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                                                  @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                                                                  @RequestParam(required = false) Double minAmount,
+                                                                  @RequestParam(required = false) Double maxAmount,
+                                                                  Pageable pageable
+    ) {
+        LoanFilter loanFilter = new LoanFilter();
+        loanFilter.setStatus(status);
+        loanFilter.setStartDate(startDate);
+        loanFilter.setEndDate(endDate);
+        loanFilter.setMaxAmount(maxAmount   );
+        loanFilter.setMinAmount(minAmount);
+
+         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+
+        Page<LoanResponseDTO> loansPage = loanService.getAllLoansByRoleAndFilters(loanFilter, pageable, currentUser);
+
+        AllLoansForUserDto response = new AllLoansForUserDto();
+        response.setCount((int) loansPage.getTotalElements());
+        response.setLoans(loansPage.getContent());
+
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/my-loans")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<List<LoanResponseDTO>> getMyLoans() {
-        List<LoanResponseDTO> loans = loanService.getAllLoansForCurrentUser();
-        return ResponseEntity.ok(loans);
-    }
 
     @GetMapping("/{loanId}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")

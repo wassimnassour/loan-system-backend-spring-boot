@@ -1,4 +1,4 @@
-package com.example.demo.dto.response;
+package com.example.demo.dto.response.loan;
 
 import com.example.demo.model.Loan;
 import lombok.AllArgsConstructor;
