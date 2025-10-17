@@ -1,8 +1,9 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.request.CreateLoanRequestDTO;
+import com.example.demo.dto.request.loan.LoanFilter;
 import com.example.demo.dto.request.loan.UpdateLoanStatusCreateDTO;
-import com.example.demo.dto.response.LoanResponseDTO;
+import com.example.demo.dto.response.loan.LoanResponseDTO;
 import com.example.demo.model.Document;
 import com.example.demo.model.Loan;
 import com.example.demo.model.LoanProcessHistory;
@@ -10,8 +11,12 @@ import com.example.demo.model.User;
 import com.example.demo.repository.DocumentRepo;
 import com.example.demo.repository.LoanProcessHistoryRepo;
 import com.example.demo.repository.LoanRepo;
+import com.example.demo.specification.Loan.LoanSpecification;
 import lombok.AllArgsConstructor;
 import org.apache.coyote.BadRequestException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -60,11 +65,10 @@ public class LoanService {
         return mapToResponseDTO(savedLoan);
     }
 
-    public List<LoanResponseDTO> getAllLoansForAdmin() {
-        List<Loan> loans = loanRepo.findAllOrderByApplicationDateDesc();
-        return loans.stream()
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
+    public Page<LoanResponseDTO> getAllLoansByRoleAndFilters(LoanFilter loanFilter , Pageable pageable, User user) {
+        Specification<Loan> loanSpecificationWithFilters =  LoanSpecification.withFilters(loanFilter , user);
+        Page<Loan> loans = loanRepo.findAll(loanSpecificationWithFilters , pageable);
+        return loans.map(this::mapToResponseDTO);
     }
 
     public List<LoanResponseDTO> getAllLoansForCurrentUser() {
