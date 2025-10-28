@@ -1,5 +1,6 @@
 package com.example.demo.exception;
 
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -53,5 +54,16 @@ public class GlobalExceptionHandler {
        errorResponse.put("path", e.getRequestURL());
 
        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+   }
+   @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Map<String, Object>> handleBadRequestException(BadRequestException e) {
+       Map<String, Object> errorResponse = new HashMap<>();
+       errorResponse.put("timestamp", LocalDateTime.now().toString());
+       errorResponse.put("status", 400);
+       errorResponse.put("error", "Not Found");
+       errorResponse.put("message", e.getMessage());
+
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
    }
 }

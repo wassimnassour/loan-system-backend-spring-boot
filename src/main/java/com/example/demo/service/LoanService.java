@@ -8,9 +8,7 @@ import com.example.demo.model.Document;
 import com.example.demo.model.Loan;
 import com.example.demo.model.LoanProcessHistory;
 import com.example.demo.model.User;
-import com.example.demo.repository.DocumentRepo;
-import com.example.demo.repository.LoanProcessHistoryRepo;
-import com.example.demo.repository.LoanRepo;
+import com.example.demo.repository.*;
 import com.example.demo.specification.Loan.LoanSpecification;
 import lombok.AllArgsConstructor;
 import org.apache.coyote.BadRequestException;
@@ -41,6 +39,9 @@ public class LoanService {
     private final LoanRepo loanRepo;
     private final DocumentRepo documentRepo;
     private  final LoanProcessHistoryRepo loanProcessHistoryRepo;
+
+    private final LoanExpertRepoRelation loanExpertRepoRelation;
+    private  final ExpertCreditRepo expertCreditRepo;
 
 
     @Transactional
@@ -174,6 +175,7 @@ public class LoanService {
                 .userEmail(loan.getUser().getEmail())
                 .userName(loan.getUser().getName())
                 .notes(loan.getNotes())
+                .experts(loan.getAssignedTos())
                 .build();
     }
 
@@ -203,6 +205,26 @@ public class LoanService {
         }catch (Exception e){
          throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan not found");
         }
+    }
+
+    @Transactional
+    public void assignExpertToLoan(Long loanId, Long expertId) throws BadRequestException {
+        try{
+            boolean loanExists = loanRepo.existsById(loanId);
+            if (!loanExists) {
+                throw new BadRequestException("Loan is not exists");
+            }
+
+            boolean expertExists = expertCreditRepo.existsById(expertId);
+            if (!expertExists) {
+                throw new BadRequestException("Expert is not exists");
+            }
+
+            loanExpertRepoRelation.assignExpertToLoan(expertId, loanId);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 }

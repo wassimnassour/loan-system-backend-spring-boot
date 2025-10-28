@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="create-loan-expert-relation-sequence" author="wassim">
+        <createSequence
+                sequenceName="loan_expert_relation_id_seq"
+                startValue="1"
+                incrementBy="1"
+                minValue="1"/>
+    </changeSet>
+
+    <changeSet id="create-loan-expert-relation" author="wassim">
+        <createTable tableName="loan_expert_relation">
+            <column name="id" type="BIGINT" defaultValueSequenceNext="loan_expert_relation_id_seq">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+          <column name="loan_id" type="bigint">
+              <constraints nullable="false" />
+          </column>
+            <column name="expert_credit_id" type="bigint" >
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="loan_expert_relation"
+                baseColumnNames="loan_id"
+                constraintName="fk_loan_expert-relation"
+                referencedTableName="loans"
+                referencedColumnNames="id" />
+        <addForeignKeyConstraint  baseTableName="loan_expert_relation" baseColumnNames="expert_credit_id"
+                                 constraintName="fk_loans_expert_relation_expert_id"
+                                  referencedTableName="expert_credit"
+                                 referencedColumnNames="id" />
+
+    </changeSet>
+
+</databaseChangeLog>
