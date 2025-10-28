@@ -1,5 +1,6 @@
 package com.example.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Builder
 @Entity
@@ -64,6 +66,10 @@ public class Loan {
     private User user;
 
     private String notes;
+
+    @OneToMany(mappedBy = "loan", fetch = FetchType.EAGER)
+    @JsonManagedReference
+    private List<LoanExpertRelation> assignedTos;
 
     @PrePersist
     protected void onCreate() {

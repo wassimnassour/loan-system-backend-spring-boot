@@ -28,15 +28,14 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/loans")
 @AllArgsConstructor
 public class LoanController {
 
     private final LoanService loanService;
-    private static final String UPLOAD_DIR = "uploads/"; // relative to project root
-
-
+ 
     @PostMapping("/create")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<LoanResponseDTO> createLoan(@Valid @RequestBody CreateLoanRequestDTO createLoanRequestDTO) {
@@ -58,10 +57,10 @@ public class LoanController {
         loanFilter.setStatus(status);
         loanFilter.setStartDate(startDate);
         loanFilter.setEndDate(endDate);
-        loanFilter.setMaxAmount(maxAmount   );
+        loanFilter.setMaxAmount(maxAmount);
         loanFilter.setMinAmount(minAmount);
 
-         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
 
         Page<LoanResponseDTO> loansPage = loanService.getAllLoansByRoleAndFilters(loanFilter, pageable, currentUser);
@@ -98,17 +97,23 @@ public class LoanController {
 
     @GetMapping("/document/all")
     public ResponseEntity<List<Document>> getAllDocuments(@RequestParam("userId") Long userId) {
-         return ResponseEntity.ok(loanService.listDocuments(userId));
+        return ResponseEntity.ok(loanService.listDocuments(userId));
     }
 
     @PostMapping("/status/{id}")
-    public void updateLoanStatus(@PathVariable("id") Long loanId,  @RequestBody @Valid  UpdateLoanStatusCreateDTO updateLoanStatus) throws BadRequestException {
-        loanService.updateLoanStatus(loanId , updateLoanStatus);
+    public void updateLoanStatus(@PathVariable("id") Long loanId, @RequestBody @Valid UpdateLoanStatusCreateDTO updateLoanStatus) throws BadRequestException {
+        loanService.updateLoanStatus(loanId, updateLoanStatus);
     }
 
     @GetMapping("/{loanId}/history")
     public ResponseEntity<List<LoanProcessHistory>> getLoanProcessHistory(@PathVariable("loanId") Long loanId) {
         return ResponseEntity.ok(loanService.listLoanProcessHistory(loanId));
+    }
+
+    @PostMapping("/assign")
+    public ResponseEntity<String> assignTo(@RequestParam Long loanId, @RequestParam Long expertId) throws BadRequestException {
+          loanService.assignExpertToLoan(loanId, expertId);
+          return ResponseEntity.ok("Assigned successfully to " + expertId);
     }
 }
 

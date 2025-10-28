@@ -1,6 +1,7 @@
 package com.example.demo.dto.response.loan;
 
 import com.example.demo.model.Loan;
+import com.example.demo.model.LoanExpertRelation;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -29,5 +31,6 @@ public class LoanResponseDTO {
     private String userEmail;
     private String userName;
     private String notes;
+    private List<LoanExpertRelation> experts;
 }
 

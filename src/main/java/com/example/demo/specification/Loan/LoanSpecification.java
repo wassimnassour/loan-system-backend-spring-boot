@@ -9,7 +9,6 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class LoanSpecification {
    public static Specification<Loan> withFilters(LoanFilter filter , User currentUser) {
