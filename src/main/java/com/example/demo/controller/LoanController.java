@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.request.CreateLoanRequestDTO;
 import com.example.demo.dto.request.loan.LoanFilter;
 import com.example.demo.dto.request.loan.UpdateLoanStatusCreateDTO;
+import com.example.demo.dto.request.loan.UpdateStatusMultipleLoansDto;
 import com.example.demo.dto.response.loan.AllLoansForUserDto;
 import com.example.demo.dto.response.loan.LoanResponseDTO;
 import com.example.demo.model.Document;
@@ -114,6 +115,13 @@ public class LoanController {
     public ResponseEntity<String> assignTo(@RequestParam Long loanId, @RequestParam Long expertId) throws BadRequestException {
           loanService.assignExpertToLoan(loanId, expertId);
           return ResponseEntity.ok("Assigned successfully to " + expertId);
+    }
+
+    @PutMapping("/multiple-loans/status")
+    public ResponseEntity<String> multipleLoanStatus(@Valid @RequestBody UpdateStatusMultipleLoansDto updateStatusMultipleLoansDto) {
+        System.out.println("update status of multiple loans at once :"+updateStatusMultipleLoansDto.getStatus() + updateStatusMultipleLoansDto.getLoanIds());
+        loanService.updateStatusOfMultipleLoans(updateStatusMultipleLoansDto);
+        return ResponseEntity.ok("update status  successfully  " + updateStatusMultipleLoansDto.getLoanIds());
     }
 }
 
