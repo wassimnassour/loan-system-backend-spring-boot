@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.dto.request.CreateLoanRequestDTO;
 import com.example.demo.dto.request.loan.LoanFilter;
 import com.example.demo.dto.request.loan.UpdateLoanStatusCreateDTO;
+import com.example.demo.dto.request.loan.UpdateStatusMultipleLoansDto;
 import com.example.demo.dto.response.loan.LoanResponseDTO;
 import com.example.demo.model.Document;
 import com.example.demo.model.Loan;
@@ -224,6 +225,14 @@ public class LoanService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+    }
+
+    @Transactional
+    public void updateStatusOfMultipleLoans(UpdateStatusMultipleLoansDto updateStatusMultipleLoansDto){
+
+        loanRepo.bulkUpdateStatusOfLoans(updateStatusMultipleLoansDto.getStatus(), updateStatusMultipleLoansDto.getLoanIds());
+
 
     }
 

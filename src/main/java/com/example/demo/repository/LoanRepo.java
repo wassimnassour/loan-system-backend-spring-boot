@@ -4,6 +4,7 @@ import com.example.demo.model.Loan;
 import com.example.demo.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -25,4 +26,9 @@ public interface LoanRepo extends JpaRepository<Loan, Long  > , JpaSpecification
     long countByUser(User user);
 
     Loan findLoanById(Long id);
+
+
+    @Modifying
+    @Query( "UPDATE Loan l SET l.status =:status  where l.id in :loanIds")
+    void bulkUpdateStatusOfLoans(@Param("status") Loan.LoanStatus status, @Param("loanIds") List<Long> loanIds);
 }
