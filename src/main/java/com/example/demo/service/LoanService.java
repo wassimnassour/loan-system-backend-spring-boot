@@ -43,6 +43,8 @@ public class LoanService {
 
     private final LoanExpertRepoRelation loanExpertRepoRelation;
     private  final ExpertCreditRepo expertCreditRepo;
+    
+    private final com.example.demo.rabbit.publisher.LoanPublisher loanPublisher;
 
 
     @Transactional
@@ -64,6 +66,10 @@ public class LoanService {
                 .build();
 
         Loan savedLoan = loanRepo.save(loan);
+        
+        // Publish loan creation event to RabbitMQ
+        loanPublisher.publishLoanCreation(savedLoan);
+        
         return mapToResponseDTO(savedLoan);
     }
 
@@ -185,16 +191,33 @@ public class LoanService {
         try{
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             Loan loan = loanRepo.findLoanById(loanId);
+            
+            Loan.LoanStatus oldStatus = loan.getStatus();
 
             LoanProcessHistory loanProcessHistory = new LoanProcessHistory();
             loanProcessHistory.setToStatus(updateLoanStatus.getToStatus());
             loanProcessHistory.setComment(updateLoanStatus.getComment());
             loanProcessHistory.setLoan(loan);
-            loanProcessHistory.setFromStatus(loan.getStatus());
+            loanProcessHistory.setFromStatus(oldStatus);
             loanProcessHistory.setPerformedBy(((User) authentication.getPrincipal()).getId());
             loan.setStatus(updateLoanStatus.getToStatus());
             loanRepo.save(loan);
             loanProcessHistoryRepo.save(loanProcessHistory);
+            
+            // Publish status change event to RabbitMQ
+            loanPublisher.publishLoanStatusChange(loanId, oldStatus, updateLoanStatus.getToStatus());
+            
+            // Publish notification to fanout exchange (email + SMS)
+            com.example.demo.rabbit.publisher.LoanPublisher.LoanNotificationEvent notification = 
+                new com.example.demo.rabbit.publisher.LoanPublisher.LoanNotificationEvent(
+                    loan.getId(),
+                    loan.getUser().getEmail(),
+                    loan.getUser().getName(),
+                    updateLoanStatus.getToStatus(),
+                    "Your loan status has been updated to: " + updateLoanStatus.getToStatus()
+                );
+            loanPublisher.publishLoanNotification(notification);
+            
         }catch (Exception e){
             throw new BadRequestException(e);
         }
@@ -230,10 +253,34 @@ public class LoanService {
 
     @Transactional
     public void updateStatusOfMultipleLoans(UpdateStatusMultipleLoansDto updateStatusMultipleLoansDto){
-
+        // Get all loans before update to capture old status
+        List<Loan> loans = loanRepo.findAllById(updateStatusMultipleLoansDto.getLoanIds());
+        
+        // Perform bulk update
         loanRepo.bulkUpdateStatusOfLoans(updateStatusMultipleLoansDto.getStatus(), updateStatusMultipleLoansDto.getLoanIds());
-
-
+        
+        // Publish status change events for each loan
+        for (Loan loan : loans) {
+            Loan.LoanStatus oldStatus = loan.getStatus();
+            
+            // Publish status change event
+            loanPublisher.publishLoanStatusChange(
+                loan.getId(), 
+                oldStatus, 
+                updateStatusMultipleLoansDto.getStatus()
+            );
+            
+            // Publish notification
+            com.example.demo.rabbit.publisher.LoanPublisher.LoanNotificationEvent notification = 
+                new com.example.demo.rabbit.publisher.LoanPublisher.LoanNotificationEvent(
+                    loan.getId(),
+                    loan.getUser().getEmail(),
+                    loan.getUser().getName(),
+                    updateStatusMultipleLoansDto.getStatus(),
+                    "Your loan status has been updated to: " + updateStatusMultipleLoansDto.getStatus()
+                );
+            loanPublisher.publishLoanNotification(notification);
+        }
     }
 
 }

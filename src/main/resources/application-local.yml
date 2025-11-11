@@ -18,6 +18,12 @@ spring:
       enabled: on
       max-request-size: 10MB
       max-file-size: 10MB
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin123
+
 logging:
 
   file:
@@ -38,3 +44,21 @@ jwt:
 
 
 
+rabbitmq:
+  exchanges:
+    loanDirectExchange: loan.direct.exchange
+    loanStatusTopicExchange: loan.topic.exchange
+    loanNotificationAlertFanoutExchange : loan.fanout.notification
+  queues:
+    personalLoanQueue : loan.personal.queue
+    carLoanQueue: loan.car.queue
+    homeLoanQueue: loan.home.queue
+    loanStatusQueue: loan.statusChange.queue
+    notificationSmsQueue: loan.notification.sms.queue
+    emailNotificationQueue: loan.notification.email.queue
+  routingKeys:
+    sendLoanWithEmail: loan.email.send
+    createLoanPersonal: createLoanPersonal
+    createLoanCar: createLoanCar
+    createLoanHome: createLoanHome
+    loanStatusChange: loan.#
