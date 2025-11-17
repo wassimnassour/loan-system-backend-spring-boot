@@ -1,8 +1,9 @@
 package com.example.demo.config;
 
-import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+
+import lombok.Data;
 
 @Data
 @Component
@@ -11,6 +12,8 @@ public class RabbitMQProperties {
     private Exchanges exchanges = new Exchanges();
     private Queues queues = new Queues();
     private RoutingKeys routingKeys = new RoutingKeys();
+    private Dlx dlx = new Dlx();
+    private Dlq dlq = new Dlq();
 
     @Data
     public  static class Exchanges{
@@ -37,5 +40,18 @@ public class RabbitMQProperties {
         private String createLoanCar;
         private String createLoanHome;
         private String loanStatusChange;
+        private String loanDlx;
+        private String loanDlqDlx; 
     }
+
+    @Data
+    public static class Dlx{
+        private String loan;
+    }
+
+    @Data
+    public static class Dlq{
+        private String loan;
+    }
+
 }

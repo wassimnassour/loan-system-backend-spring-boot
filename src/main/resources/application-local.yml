@@ -1,7 +1,6 @@
-
 spring:
   application:
-    name:  "loanSystem"
+    name: "loanSystem"
   datasource:
     username: "my_user"
     password: "my_password"
@@ -25,32 +24,26 @@ spring:
     password: admin123
 
 logging:
-
   file:
     path: logs
   level:
     root: INFO
 
-
-
 jwt:
   secret: "MyVerySecretKeyMyVerySecretKeyMyVerySecretKeyMyVerySecretKeyMyVerySecretKeyMyVerySecretKey"
-  expiration: 3600000  # 1 hour in milliseconds
+  expiration: 3600000 # 1 hour in milliseconds
   issuer: "my-app"
   access-token-expiration: 4000
   refreshTokenExpiration: 600009
   refreshSecretKey: refreshSecretKeyrefreshSecretKeyrefreshSecretKeyrefreshSecretKeyrefreshSecretKeyrefreshSecretKeyrefreshSecretKey
 
-
-
-
 rabbitmq:
   exchanges:
     loanDirectExchange: loan.direct.exchange
     loanStatusTopicExchange: loan.topic.exchange
-    loanNotificationAlertFanoutExchange : loan.fanout.notification
+    loanNotificationAlertFanoutExchange: loan.fanout.notification
   queues:
-    personalLoanQueue : loan.personal.queue
+    personalLoanQueue: loan.personal.queue
     carLoanQueue: loan.car.queue
     homeLoanQueue: loan.home.queue
     loanStatusQueue: loan.statusChange.queue
@@ -62,3 +55,10 @@ rabbitmq:
     createLoanCar: createLoanCar
     createLoanHome: createLoanHome
     loanStatusChange: loan.#
+    loanDlx: loan.dlx
+    loanDlq: loan.dlq
+    loanDlqDlx: loan.dlq.dlx
+  dlx:
+    loan: loan.dlx
+  dlq:
+    loan: loan.dlq
